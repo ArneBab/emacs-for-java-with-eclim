@@ -1,0 +1,463 @@
+#+title: Core Emacs Customizations everyone should have, take 2
+
+#+LaTeX_HEADER: \makeatletter
+#+LaTeX_HEADER: \renewenvironment{minted@colorbg}[1]{
+#+LaTeX_HEADER: \setlength{\fboxsep}{\z@}
+#+LaTeX_HEADER: \def\minted@bgcol{#1}
+#+LaTeX_HEADER: \noindent
+#+LaTeX_HEADER: \begin{lrbox}{\minted@bgbox}
+#+LaTeX_HEADER: \begin{minipage}{\linewidth}}
+#+LaTeX_HEADER: {\end{minipage}
+#+LaTeX_HEADER: \end{lrbox}%
+#+LaTeX_HEADER: \colorbox{\minted@bgcol}{\usebox{\minted@bgbox}}}
+#+LaTeX_HEADER: \makeatother
+
+# Clean source block export.
+
+#+BEGIN_LaTeX
+\definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
+#+END_LaTeX
+
+#+BEGIN_SRC elisp :exports none
+  (setq org-latex-minted-options
+    '(("bgcolor" "mintedbg") ("frame" "single") ("framesep" "6pt") ("mathescape" "true") ("fontsize" "\\footnotesize")))
+  ; "\\definecolor{mintedbg}{rgb}{0.95,0.95,0.95}"
+  nil
+#+END_SRC
+
+* Intro
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+#+BEGIN_HTML
+<div style="float: right; text-align: right; border: solid thin gray; padding-left: 1em; padding-right: 1em; padding-top: 0.5em; margin-left: 1em">
+<p><strong><a href="babcore.pdf">PDF-version</a> (for printing)</strong></p>
+<p><a href="babcore.org">orgmode-version</a> (for editing)</p>
+<p><a href="http://bitbucket.org/ArneBab/.emacs.d">repository</a> (for forking)</p>
+<p><a href="babcore2.el">Emacs Lisp</a> (to use)</p>
+<p><a href="http://marmalade-repo.org/packages/babcore">Package</a> (to install)</p>
+</div>
+#+END_HTML
+
+I have been tweaking my emacs configuration for years, now, and I
+added quite some cruft. But while searching for the right way to work,
+I also found some gems which I direly miss in pristine emacs.
+
+This file is about those gems. It is a simpler continuation and
+simplification of babcore, but since I lost access to babcore on
+marmalade, I’m calling it babcore2.
+
+Babcore is strongly related to [[http://batsov.com/prelude/][Prelude]]. Actually it is just like
+prelude, but with the stuff /I/ consider essential.
+
+But before we start, there is one crucial piece of advice which
+everyone who uses Emacs should know:
+
+: C-g: abort
+
+/Hold control and hit g./
+
+That gets you out of almost any situation. If anything goes wrong,
+just hit C-g repeatedly till the problem is gone - or you cooled off
+far enough to realize that a no-op is the best way to react.
+
+To repeat: If anything goes wrong, just hit *C-g*.
+
+* Package Header
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :shebang:  ;;; babcore2.el --- Core Emacs configuration. This should be the minimum in every emacs config.
+  :END:
+
+As Emacs package, babcore needs a proper header.
+
+#+BEGIN_SRC elisp
+  ;; Copyright (C) 2017 Arne Babenhauserheide
+
+  ;; Author: Arne Babenhauserheide (and various others in Emacswiki and elsewhere).
+  ;; Maintainer: Arne Babenhauserheide
+  ;; Created 29. August 2017
+  ;; Version: 0.0.1
+  ;; Version Keywords: core configuration
+  ;; Package-Requires: ((goto-last-change) (key-chord))
+
+  ;; This program is free software; you can redistribute it and/or
+  ;; modify it under the terms of the GNU General Public License
+  ;; as published by the Free Software Foundation; either version 3
+  ;; of the License, or (at your option) any later version.
+
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+  ;;; Commentary:
+  ;; Quick Start / installation:
+  ;; 1. Download this file and put it next to other files Emacs includes
+  ;; 2. Add this to you .emacs file and restart emacs:
+  ;; 
+  ;;      (require 'babcore2)
+  ;;
+  ;; Use Case: Use a common core configuration so you can avoid the
+  ;;   tedious act of gathering all the basic stuff over the years and
+  ;;   can instead concentrate on the really cool new stuff Emacs offers
+  ;;   you.
+  ;;
+
+  ;;; Change Log:
+
+  ;; 2017-08-29 - Initial release
+
+  ;;; Code:
+
+#+END_SRC
+
+Additionally it needs the proper last line. See [[*finish%20up][finish up]] for details.
+
+
+* goto-last-change
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+This is the kind of feature which looks tiny: Go to the place where
+you last changed something.
+
+And then you get used to it and it becomes absolutely indispensable.
+
+#+BEGIN_SRC elisp
+  ; go to the last change
+  (require 'goto-last-change)
+  (global-set-key [(control .)] 'goto-last-change)
+  ; M-. can conflict with etags tag search. But C-. can get overwritten
+  ; by flyspell-auto-correct-word. And goto-last-change needs a really
+  ; fast key.
+  (global-set-key [(meta .)] 'goto-last-change)
+  ; ensure that even in worst case some goto-last-change is available
+  (global-set-key [(control meta .)] 'goto-last-change)
+#+END_SRC
+
+* Key chords
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+This is the second strike for saving your pinky. Yes, Emacs is hard on
+the pinky. Even if it were completely designed to avoid strain on the
+pinky, it would still be hard, because any system in which you do not
+have to reach for the mouse is hard on the pinky.
+
+But it also provides some of the neatest tricks to reduce that strain,
+so you can make Emacs your pinky saviour.
+
+The key chord mode allows you to hit any two keys at (almost) the same
+time to invoke commands. Since this can interfere with normal typing,
+I would only use it for letters which are rarely typed after each
+other.
+
+These default chords have proven themselves to be useful in years of
+working with Emacs.
+
+#+BEGIN_SRC elisp
+  ; use key chords invoke commands
+  (require 'key-chord)
+  (key-chord-mode 1)
+  ; buffer actions
+  (key-chord-define-global "vb"     'eval-buffer)
+  ; frame actions
+  (key-chord-define-global "xo"     'other-window);
+  (key-chord-define-global "x1"     'delete-other-windows)
+  (key-chord-define-global "x0"     'delete-window)
+  (defun kill-this-buffer-if-not-modified ()
+    (interactive)
+    ; taken from menu-bar.el
+    (if (menu-bar-non-minibuffer-window-p)
+        (kill-buffer-if-not-modified (current-buffer))
+      (abort-recursive-edit)))
+  ; file actions
+  (key-chord-define-global "bf"     'ido-switch-buffer)
+  (key-chord-define-global "bk"     'kill-this-buffer-if-not-modified)
+  (key-chord-define-global "cf"     'ido-find-file)
+  (key-chord-define-global "vc"     'vc-next-action)
+  
+#+END_SRC
+
+To complement these tricks, you should also install and use [[http://www.workrave.org/][workrave]]
+or at least [[http://www.emacswiki.org/emacs/TypeBreakMode][type-break-mode]].
+
+* Blink instead of beeping
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+#+BEGIN_SRC elisp
+(setq visible-bell t)
+#+END_SRC
+
+* vc-state is slow
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+TODO: Adjust vc-find-file-hook to call the vcs tool asynchronously.
+
+* Save macros as functions
+
+Now for something which should really be provided by default: You just
+wrote a cool emacs macro, and you are sure that you will need that
+again a few times.
+
+Well, then save it!
+
+In standard emacs that needs multiple steps. And I hate
+that. Something as basic as saving a macro should only need one single
+step. It does now (and Emacs is great, because it allows me to do
+this!).
+
+This bridges the gap between function definitions and keyboard macros,
+making keyboard macros something like first class citizens in your
+Emacs.
+
+#+BEGIN_SRC elisp
+  ; save the current macro as reusable function.
+  (defun save-current-kbd-macro-to-dot-emacs (name)
+    "Save the current macro as named function definition inside
+  your initialization file so you can reuse it anytime in the
+  future."
+    (interactive "SSave Macro as: ")
+    (name-last-kbd-macro name)
+    (save-excursion 
+      (find-file-literally user-init-file)
+      (goto-char (point-max))
+      (insert "\n\n;; Saved macro\n")
+      (insert-kbd-macro name)
+      (insert "\n")))
+#+END_SRC
+
+* Transparent GnuPG encryption
+
+If you have a diary or similar, you should really use this. It only
+takes a few lines of code, but these few lines are the difference
+between encryption for those who know they need it and encryption for
+everyone.
+
+#+BEGIN_SRC elisp
+; Activate transparent GnuPG encryption.
+(require 'epa-file)
+(epa-file-enable)
+#+END_SRC
+
+* Highlight TODO and FIXME in comments 
+
+This is a default feature in most IDEs. Since Emacs allows you to
+build your own IDE, it does not offer it by defaultâ€¦ but it should,
+since that does not disturb anything. So we add it.
+
+fic-ext-mode highlight TODO and FIXME in comments for common
+programming languages.
+
+#+BEGIN_SRC elisp
+  ;; Highlight TODO and FIXME in comments 
+  (package-require 'fic-ext-mode)
+  (defun add-something-to-mode-hooks (mode-list something)
+    "helper function to add a callback to multiple hooks"
+    (dolist (mode mode-list)
+      (add-hook (intern (concat (symbol-name mode) "-mode-hook")) something)))
+  
+  (add-something-to-mode-hooks '(c++ tcl emacs-lisp python text markdown latex) 'fic-ext-mode)
+  
+#+END_SRC
+
+* saveplace
+
+If I reopen a file, I want to start at the line at which I was when I
+closed it.
+
+#+BEGIN_SRC elisp
+  ; save the place in files
+  (require 'saveplace)
+  (setq-default save-place t)
+#+END_SRC
+* savehist
+
+And I want to be able to call my recent commands in the minibuffer. I
+normally don’t type the full command name anyway, but rather C-r
+followed by a small part of the command. Losing that on restart really
+hurts, so I want to avoid that loss.
+
+#+BEGIN_SRC elisp
+  ; save minibuffer history
+  (require 'savehist)
+  ;; increase the default history cutoff
+  (setq history-length 1000)
+  (savehist-mode t)
+  (setq savehist-additional-variables
+        '(regexp-search-ring
+          register-alist))
+#+END_SRC
+
+* auto-complete
+
+This gives you inline auto-completion preview with an overlay window -
+even in the text-console. Partially this goes as far as API-hints (for
+example for elisp code). Absolutely essential.
+
+#+BEGIN_SRC elisp
+  ;; Inline auto completion and suggestions
+  (use-package auto-complete :ensure t)
+  ;; avoid competing with org-mode templates.
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (require 'org)
+              (make-local-variable 'ac-stop-words)
+              (loop for template in org-structure-template-alist do
+                    (add-to-list 'ac-stop-words 
+                                 (concat "<" (car template))))))
+#+END_SRC
+* Desktop tricks
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+These are ways to improve the integration of Emacs in a graphical
+environment.
+
+We have this cool editor. But it *is* from the 90s, and some of the
+more modern concepts of graphical programs have not yet been
+integrated into its core. Maybe because everyone just adds them to the
+custom setup :)
+
+On the other hand, Emacs always provided split windows and many of the
+“new” window handling functions in dwm and similar - along with a
+level of integration with which normal graphical desktops still have
+to catch up. Open a file, edit it as text, quickly switch to org-mode
+to be able to edit an ascii table more efficiently, then switch to
+html mode to add some custom structure - and all that with a
+consistent set of key bindings.
+
+But enough with the glorification, let’s get to the integration of
+stuff where Emacs arguably still has weaknesses.
+
+** frame-to-front
+
+Get the current Emacs frame to the front. You can for example call
+this via emacsclient and set it as a keyboard shortcut in your
+desktop (for me it is F12):
+
+: emacsclient -e "(show-frame)"
+
+This sounds much easier than it proves to be in the end… but luckily
+you only have to solve it once, then you can google it anywhere…
+
+#+BEGIN_SRC elisp
+  (defun show-frame (&optional frame)
+    "Show the current Emacs frame or the FRAME given as argument.
+
+  And make sure that it really shows up!"
+    (raise-frame)
+    ; yes, you have to call this twice. Don’t ask me why…
+    ; select-frame-set-input-focus calls x-focus-frame and does a bit of
+    ; additional magic.
+    (select-frame-set-input-focus (selected-frame))
+    (select-frame-set-input-focus (selected-frame)))
+#+END_SRC
+
+** urgency hint
+
+Make Emacs announce itself in the tray.
+
+#+BEGIN_SRC elisp
+  ;; let emacs blink when something interesting happens.
+  ;; in KDE this marks the active Emacs icon in the tray.
+  (defun x-urgency-hint (frame arg &optional source)
+    "Set the x-urgency hint for the frame to arg: 
+
+  - If arg is nil, unset the urgency.
+  - If arg is any other value, set the urgency.
+
+  If you unset the urgency, you still have to visit the frame to make the urgency setting disappear (at least in KDE)."
+      (let* ((wm-hints (append (x-window-property 
+                  "WM_HINTS" frame "WM_HINTS" source nil t) nil))
+       (flags (car wm-hints)))
+      (setcar wm-hints
+          (if arg
+          (logior flags #x100)
+            (logand flags (lognot #x100))))
+      (x-change-window-property "WM_HINTS" wm-hints frame "WM_HINTS" 32 t)))
+
+  (defun x-urgent (&optional arg)
+    "Mark the current emacs frame as requiring urgent attention. 
+
+  With a prefix argument which does not equal a boolean value of nil, remove the urgency flag (which might or might not change display, depending on the window manager)."
+    (interactive "P")
+    (let (frame (selected-frame))
+    (x-urgency-hint frame (not arg))))
+#+END_SRC
+
+** default key bindings
+
+I always hate it when some usage pattern which is consistent almost
+everywhere fails with some program. Especially if that is easily
+avoidable.
+
+This code fixes that for Emacs in KDE: F5 reloads, C-+ increases the text size and C-- decreases text size.
+
+#+BEGIN_SRC elisp
+  ; Default KDE keybindings to make emacs nicer integrated into KDE. 
+  
+  ; can treat C-m as its own mapping.
+  ; (define-key input-decode-map "\C-m" [?\C-1])
+  
+  (defun revert-buffer-preserve-modes ()
+    (interactive)
+    (revert-buffer t nil t))
+  
+  ; C-m shows/hides the menu bar - thanks to http://stackoverflow.com/questions/2298811/how-to-turn-off-alternative-enter-with-ctrlm-in-linux
+  ; f5 reloads
+  (defconst kde-default-keys-minor-mode-map
+    (let ((map (make-sparse-keymap)))
+      (set-keymap-parent map text-mode-map)
+      (define-key map [f5] 'revert-buffer-preserve-modes)
+      (define-key map [?\C-1] 'menu-bar-mode)
+      (define-key map [?\C-+] 'text-scale-increase)
+      (define-key map [?\C--] 'text-scale-decrease) ; shadows 'negative-argument which is also available via M-- and C-M--, though.
+      (define-key map [C-kp-add] 'text-scale-increase)
+      (define-key map [C-kp-subtract] 'text-scale-decrease)
+      map)
+    "Keymap for `kde-default-keys-minor-mode'.")
+  
+  ;; Minor mode for keypad control
+  (define-minor-mode kde-default-keys-minor-mode
+    "Adds some default KDE keybindings"
+    :global t
+    :init-value t
+    :lighter ""
+    :keymap 'kde-default-keys-minor-mode-map
+    )
+#+END_SRC
+
+** Useful Window/frame titles
+
+The titles of windows of GNU Emacs normally look pretty useless (just stating emacs@host), but it’s easy to make them display useful information:
+#+BEGIN_SRC elisp
+  ;; Set the frame title as by http://www.emacswiki.org/emacs/FrameTitle
+  (setq frame-title-format (list "%b ☺ " (user-login-name) "@" (system-name) "%[ - GNU %F " emacs-version)
+        icon-title-format (list "%b ☻ " (user-login-name) "@" (system-name) " - GNU %F " emacs-version))
+#+END_SRC
+
+Now we can always see the name of the open buffer in the frame. No more searching for the right emacs window to switch to in the window list.
+* finish up
+  :PROPERTIES:
+  :tangle:   babcore2.el
+  :END:
+
+Make it possible to just (require 'babcore) and add the proper package footer.
+
+#+BEGIN_SRC elisp
+  (provide 'babcore2)
+  ;;; babcore2.el ends here  
+#+END_SRC

@@ -1,0 +1,39 @@
+#!/bin/bash
+function usage {
+    echo "Usage: $0 inputfile.json"
+    exit
+}
+
+if [ ! $# -eq 1 ]
+then
+    usage
+fi
+
+if [ "$1" = '-h' -o "$1" = '--help' ]
+then
+    usage
+fi
+
+log_file=/dev/null
+
+inputfile=$1
+inputfile_name=`basename "$inputfile"`
+
+lintrc_name=.demjsonrc
+lintrc_file=~/$lintrc_name
+if [ ! -e $lintrc_file ]
+then
+    bin_dir=`dirname "$0"`
+    lintrc_file=$bin_dir/$lintrc_name
+fi
+
+cmd_options='-s'
+if [ -e $lintrc_file ]
+then
+    echo "$lintrc_name exits: $lintrc_file" >> $log_file
+    cmd_options=`grep -F -m 1 "$inputfile_name" "$lintrc_file" | cut -d '=' -f 2`
+fi
+
+echo 'cmd: ' jsonlint $cmd_options $inputfile >> $log_file
+
+jsonlint $cmd_options "$inputfile"

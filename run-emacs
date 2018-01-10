@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+HOME="$(realpath $(dirname $0))" emacs
