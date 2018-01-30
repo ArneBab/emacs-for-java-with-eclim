@@ -23,7 +23,7 @@ http://eclim.org/install.html
 	ln -s /path/to/eclipse/eclimd ~/.local/bin/eclimd
 	ln -s /path/to/eclipse/plugins/*eclim*/bin/eclim ~/.local/bin/eclim
 
-Customize the variables `eclim-java-documentation-root` and `eclim-default-workspace` (with `M-x customize-variable`)
+Customize the variables `eclim-java-documentation-root` and `eclimd-default-workspace` (with `M-x customize-variable`)
 
 Usage
 -----
