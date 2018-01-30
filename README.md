@@ -18,10 +18,12 @@ http://eclim.org/install.html
 
     chmod +x eclim_2.7.1.bin
     ./eclim_2.7.1.bin # as USER, not root!
-    # eclipse path: /path/to/here/eclipse/java-oxygen/eclipse/
+    # eclipse path: /path/to/eclipse/java-oxygen/eclipse/
 	#   i.e. from $ realpath eclipse
+	ln -s /path/to/eclipse/eclimd ~/.local/bin/eclimd
+	ln -s /path/to/eclipse/plugins/*eclim*/bin/eclim ~/.local/bin/eclim
 
-Customize the variable ´eclim-java-documentation-root´
+Customize the variables `eclim-java-documentation-root` and `eclim-default-workspace` (with `M-x customize-variable`)
 
 Usage
 -----
